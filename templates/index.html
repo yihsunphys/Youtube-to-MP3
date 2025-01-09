@@ -4,45 +4,49 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>YouTube to MP3</title>
+    <script>
+        function startDownload() {
+            const url = document.getElementById("url").value;
+            const outputDir = document.getElementById("output_dir").value || "downloads";
+
+            fetch("/download", {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: new URLSearchParams({ url, output_dir: outputDir })
+            }).then(response => response.json()).then(data => {
+                if (data.error) {
+                    alert(data.error);
+                } else {
+                    alert(data.message);
+                    updateProgress();
+                }
+            });
+        }
+
+        function updateProgress() {
+            fetch("/progress")
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById("status").innerText = `Status: ${data.status}`;
+                    document.getElementById("progress").innerText = `Progress: ${data.percentage}%`;
+
+                    if (data.status === "Downloading") {
+                        setTimeout(updateProgress, 1000);
+                    }
+                });
+        }
+    </script>
 </head>
 <body>
-    <h1>Download MP3 from YouTube</h1>
-    <form id="download-form">
-        <input type="text" id="url" placeholder="Enter YouTube URL" required>
-        <button type="submit">Download</button>
-    </form>
-
-    <div id="progress-status"></div>
-    <div id="download-link"></div>
-
-    <script>
-        const form = document.getElementById('download-form');
-        const progressStatus = document.getElementById('progress-status');
-        const downloadLink = document.getElementById('download-link');
-
-        form.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const url = document.getElementById('url').value;
-
-            fetch('/download', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ url }),
-            })
-            .then((response) => response.json())
-            .then((data) => {
-                progressStatus.innerText = 'Download started!';
-
-                // 假设返回的消息中包含了文件的 URL
-                const fileUrl = '/download-file/filename.mp3'; // 假设返回的是文件名，替换成实际的文件名
-                downloadLink.innerHTML = `<a href="${fileUrl}" download>Click here to download the MP3 file</a>`;
-            })
-            .catch((error) => {
-                console.error('Error:', error);
-            });
-        });
-    </script>
+    <h1>YouTube to MP3 Converter</h1>
+    <label for="url">YouTube URL:</label>
+    <input type="text" id="url" placeholder="Enter YouTube URL">
+    <br>
+    <label for="output_dir">Output Directory (Optional):</label>
+    <input type="text" id="output_dir" placeholder="downloads">
+    <br><br>
+    <button onclick="startDownload()">Start Download</button>
+    <p id="status">Status: </p>
+    <p id="progress">Progress: </p>
 </body>
 </html>
