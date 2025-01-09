@@ -22,7 +22,6 @@ def download_audio(url, output_dir="downloads"):
     clear_download_folder(output_dir)  # 清空資料夾
     progress["status"] = "Downloading"
     progress["percentage"] = 0
-
     # 固定檔案名稱為 1.mp3
     output_file = os.path.join(output_dir, "2.mp3")
     command = [
