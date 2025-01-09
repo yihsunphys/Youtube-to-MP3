@@ -18,6 +18,7 @@ def download_audio(url, output_dir="downloads"):
 
     command = [
         "yt-dlp",
+        "--user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
         "-x", "--audio-format", "mp3",
         "--output", os.path.join(output_dir, "%(title)s.%(ext)s"),
         url
