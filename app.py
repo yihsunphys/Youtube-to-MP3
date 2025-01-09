@@ -2,6 +2,7 @@ import os
 import subprocess
 import threading
 from flask import Flask, request, render_template, jsonify, send_from_directory
+import shutil
 
 app = Flask(__name__)
 progress = {"status": "", "percentage": 0}
@@ -9,10 +10,15 @@ progress = {"status": "", "percentage": 0}
 # 使用 Render 提供的 PORT 環境變數
 port = int(os.environ.get("PORT", 5000))
 
+def clear_download_folder(folder):
+    """清空指定資料夾"""
+    if os.path.exists(folder):
+        shutil.rmtree(folder)  # 刪除整個資料夾
+    os.makedirs(folder)  # 重新建立空的資料夾
 
 def download_audio(url, output_dir="downloads"):
     global progress
-    os.makedirs(output_dir, exist_ok=True)  # 確保下載目錄存在
+    clear_download_folder(output_dir)  # 清空資料夾
     progress["status"] = "Downloading"
     progress["percentage"] = 0
 
