@@ -24,7 +24,7 @@ def download_audio(url, output_dir="downloads"):
     progress["percentage"] = 0
 
     # 固定檔案名稱為 1.mp3
-    output_file = os.path.join(output_dir, "1.mp3")
+    output_file = os.path.join(output_dir, "2.mp3")
     command = [
         "yt-dlp",
         "--cookies", "cookies.txt",
