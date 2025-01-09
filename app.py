@@ -24,7 +24,7 @@ def download_audio(url, output_dir="downloads"):
     ]
 
     try:
-        process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+        process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
         for line in process.stdout:
             # 找到進度百分比，例如: "[download]  23.0%"
             if "[download]" in line and "%" in line:
@@ -34,13 +34,15 @@ def download_audio(url, output_dir="downloads"):
                     progress["percentage"] = int(percentage)  # 轉換為整數顯示
                 except ValueError:
                     continue  # 如果無法解析，跳過該行
+        stderr_output = process.stderr.read()
         process.wait()
+
         if process.returncode == 0:
             progress["status"] = "Completed"
         else:
-            progress["status"] = "Failed"
+            progress["status"] = f"Failed with error: {stderr_output.decode()}"
     except Exception as e:
-        progress["status"] = f"Error: {e}"
+        progress["status"] = f"Error: {str(e)}"
 
 
 
