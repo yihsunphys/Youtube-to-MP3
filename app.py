@@ -41,8 +41,8 @@ def download_audio(url, output_dir="downloads"):
             title = "download"  # 如果標題為空，使用預設的檔案名
         
         # 動態設定檔案名稱，根據影片標題命名檔案
-        # output_file = os.path.join(output_dir, f"{title}.mp3")
-        output_file = os.path.join(output_dir, generate_filename(url))
+        output_file = os.path.join(output_dir, f"{title}.mp3")
+        # output_file = os.path.join(output_dir, generate_filename(url))
         
         # 使用 yt-dlp 下載音訊並轉換為 mp3
         command = [
