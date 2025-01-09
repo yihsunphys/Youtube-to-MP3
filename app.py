@@ -5,8 +5,7 @@ from flask import Flask, request, render_template, jsonify, send_from_directory
 import shutil
 
 app = Flask(__name__)
-progress = {"status": "", "percentage": 0}
-
+progress = {"status": "", "percentage": 0, "filename": ""}  # 加入 filename
 
 # 使用 Render 提供的 PORT 環境變數
 port = int(os.environ.get("PORT", 5000))
@@ -22,17 +21,28 @@ def download_audio(url, output_dir="downloads"):
     clear_download_folder(output_dir)  # 清空資料夾
     progress["status"] = "Downloading"
     progress["percentage"] = 0
-    # 固定檔案名稱為 1.mp3
-    output_file = os.path.join(output_dir, "2.mp3")
-    command = [
-        "yt-dlp",
-        "--cookies", "cookies.txt",
-        "-x", "--audio-format", "mp3",
-        "--output", output_file,
-        url
-    ]
 
+    # 使用 yt-dlp 來抓取影片標題
+    command_title = ["yt-dlp", "--get-title", url]
     try:
+        title_process = subprocess.Popen(command_title, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        title, _ = title_process.communicate()
+        title = title.strip()  # 去除標題的空白字元
+        if not title:
+            title = "download"  # 如果標題為空，使用預設的檔案名
+        
+        # 動態設定檔案名稱，根據影片標題命名檔案
+        output_file = os.path.join(output_dir, f"{title}.mp3")
+        
+        # 使用 yt-dlp 下載音訊並轉換為 mp3
+        command = [
+            "yt-dlp",
+            "--cookies", "cookies.txt",
+            "-x", "--audio-format", "mp3",
+            "--output", output_file,
+            url
+        ]
+
         process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
         for line in process.stdout:
             # 解析進度百分比，例如: "[download]  23.0%"
@@ -47,6 +57,7 @@ def download_audio(url, output_dir="downloads"):
 
         if process.returncode == 0:
             progress["status"] = "Completed"
+            progress["filename"] = f"{title}.mp3"  # 設定檔案名稱
         else:
             stderr_output = process.stderr.read()
             progress["status"] = f"Failed with error: {stderr_output}"

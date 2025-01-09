@@ -31,7 +31,7 @@
 
                     if (data.status === "Completed") {
                         const downloadLink = document.getElementById("download-link");
-                        downloadLink.href = "/files/2.mp3";
+                        downloadLink.href = `/files/${data.filename}`;  // 使用後端返回的檔案名稱
                         downloadLink.style.display = "block";
                     }
 
