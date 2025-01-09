@@ -18,7 +18,7 @@ def download_audio(url, output_dir="downloads"):
 
     command = [
         "yt-dlp",
-        "--cookies-from-browser", "chrome",
+        "--cookies", "cookies.txt",
         "-x", "--audio-format", "mp3",
         "--output", os.path.join(output_dir, "%(title)s.%(ext)s"),
         url
