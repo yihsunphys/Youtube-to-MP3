@@ -40,7 +40,7 @@ def download_audio(url, output_dir="downloads"):
         if process.returncode == 0:
             progress["status"] = "Completed"
         else:
-            progress["status"] = f"Failed with error: {stderr_output.decode()}"
+            progress["status"] = f"Failed with error: {stderr_output}"
     except Exception as e:
         progress["status"] = f"Error: {str(e)}"
 
