@@ -3,10 +3,24 @@ import os
 import subprocess
 import threading
 
+
+
+
+
+
 app = Flask(__name__)
 progress = {"status": "", "percentage": 0}
 
+# 使用 Render 提供的 PORT 环境变量
+port = int(os.environ.get("PORT", 5000))
 
+@app.route('/')
+def home():
+    return "Hello, World!"
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=port)  # 绑定到所有可用IP和指定的端口
+    
 def download_audio(url, output_dir="downloads"):
     global progress
     os.makedirs(output_dir, exist_ok=True)
