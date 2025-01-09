@@ -18,8 +18,7 @@ def download_audio(url, output_dir="downloads"):
 
     command = [
         "yt-dlp",
-        "--username", "yqiu789@gmail.com",  # 你的 YouTube 登录邮箱
-        "--password", "a9206145",  # 你的密码
+        "--cookies-from-browser", "chrome",
         "-x", "--audio-format", "mp3",
         "--output", os.path.join(output_dir, "%(title)s.%(ext)s"),
         url
