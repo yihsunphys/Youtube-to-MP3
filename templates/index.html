@@ -9,6 +9,7 @@
     <style>
         h1 {
             font-family: 'Raleway Dots', sans-serif; /* 使用 Railway Dots 字體 */
+            color: white;
         }
 
         body {
@@ -20,17 +21,57 @@
             height: 100vh; /* 使用視窗高度 */
             margin: 0; /* 移除默認的邊距 */
             text-align: center; /* 文字水平居中 */
+            background-color: #001020; /* 背景色為藏青色 */
+            color: white;
         }
-
+        input {
+            width: 500px; /* 設置輸入框的寬度 */
+            height: 20px; /* 設置輸入框的高度 */
+            padding: 10px; /* 增加內邊距 */
+            font-size: 16px; /* 設置字體大小 */
+            border: 2px solid #ccc; /* 設置邊框 */
+            border-radius: 5px; /* 圓角邊框 */
+        }
         button {
             font-family: 'Roboto', sans-serif;
+            color: white;
+            background-color: #52626b; /* 設置按鈕背景為比較亮的藍色 */
+            border: none;
+            border-radius: 5px; /* 圓角邊框 */
+            padding: 10px 20px;
+            cursor: pointer;
+        }
+        
+        button:hover {
+            background-color: #313436; /* 按鈕懸浮時顏色 */
         }
 
         footer {
             position: absolute;
             bottom: 10px; /* 讓 footer 靠近頁面底部 */
             font-size: 14px; /* 調整字體大小 */
-            color: #555; /* 設置字體顏色 */
+            color: white; /* 設置字體顏色 */
+        }
+
+        #downloadLinkContainer {
+            margin-top: 20px; /* 增加上邊距，讓下載連結按鈕向下移 */
+        }
+
+        /* 這是為了讓下載按鈕看起來像普通的按鈕 */
+        .download-button {
+            font-family: 'Roboto', sans-serif;
+            color: white; /* 文字顏色 */
+            background-color: #145677; /* 按鈕顏色 */
+            padding: 10px 20px; /* 按鈕大小 */
+            border: none;
+            border-radius: 5px; /* 圓角邊框 */
+            cursor: pointer;
+            text-decoration: none; /* 移除下劃線 */
+            display: inline-block; /* 讓它顯示為塊元素 */
+        }
+
+        .download-button:hover {
+            background-color: #003366; /* 懸停時顏色 */
         }
     </style>
     <script>
@@ -56,6 +97,7 @@
                     const linkElement = document.createElement('a');
                     linkElement.href = data.download_link;  // 下載連結
                     linkElement.download = "audio.mp3";  // 可以設置預設的檔名
+                    linkElement.classList.add('download-button');  // 添加按鈕樣式
                     linkElement.textContent = "Click here to download the MP3 file";
                     document.getElementById("downloadLinkContainer").innerHTML = '';  // 清空容器
                     document.getElementById("downloadLinkContainer").appendChild(linkElement);
@@ -70,13 +112,12 @@
 </head>
 <body>
     <h1>YouTube to MP3 Converter</h1>
-    <label for="url">YouTube URL:</label>
     <input type="text" id="url" placeholder="Enter YouTube URL">
     <br><br>
     <button onclick="startDownload()">Start Download</button>
     <div id="downloadLinkContainer"></div> <!-- 顯示下載連結的容器 -->
     <footer>
-        by yihsunphys
+        by yihsunphys♡
     </footer>
 </body>
 </html>
