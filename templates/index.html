@@ -4,6 +4,35 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>YouTube to MP3 Converter</title>
+    <link href="https://fonts.googleapis.com/css2?family=Raleway+Dots&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        h1 {
+            font-family: 'Raleway Dots', sans-serif; /* 使用 Railway Dots 字體 */
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            display: flex; /* 啟用 flex 布局 */
+            flex-direction: column; /* 讓內容排列成垂直方向 */
+            justify-content: center; /* 垂直居中 */
+            align-items: center; /* 水平居中 */
+            height: 100vh; /* 使用視窗高度 */
+            margin: 0; /* 移除默認的邊距 */
+            text-align: center; /* 文字水平居中 */
+        }
+
+        button {
+            font-family: 'Roboto', sans-serif;
+        }
+
+        footer {
+            position: absolute;
+            bottom: 10px; /* 讓 footer 靠近頁面底部 */
+            font-size: 14px; /* 調整字體大小 */
+            color: #555; /* 設置字體顏色 */
+        }
+    </style>
     <script>
         function startDownload() {
             const url = document.getElementById("url").value;
@@ -45,7 +74,9 @@
     <input type="text" id="url" placeholder="Enter YouTube URL">
     <br><br>
     <button onclick="startDownload()">Start Download</button>
-
     <div id="downloadLinkContainer"></div> <!-- 顯示下載連結的容器 -->
+    <footer>
+        by yihsunphys
+    </footer>
 </body>
 </html>
