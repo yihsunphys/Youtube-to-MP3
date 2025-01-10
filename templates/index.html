@@ -20,24 +20,17 @@
                         throw new Error(err.error);
                     });
                 }
-                // 從 Content-Disposition 標頭提取檔案名稱
-                const contentDisposition = response.headers.get('Content-Disposition');
-                let filename = "audio.mp3"; // 預設檔案名
-                if (contentDisposition) {
-                    const match = contentDisposition.match(/filename\*=UTF-8''(.+)/);
-                    if (match && match[1]) {
-                        filename = decodeURIComponent(match[1]);
-                    }
-                }
-                return response.blob().then(blob => ({ blob, filename }));
+                return response.json();  // 解析 JSON 並返回下載連結
             })
-            .then(({ blob, filename }) => {
-                const link = document.createElement('a');
-                link.href = URL.createObjectURL(blob);
-                link.download = filename;
-                link.click(); // 觸發下載
-                URL.revokeObjectURL(link.href); // 釋放內存
-                alert("Download completed!");
+            .then(data => {
+                if (data.download_link) {
+                    const linkElement = document.createElement('a');
+                    linkElement.href = data.download_link;  // 下載連結
+                    linkElement.download = "audio.mp3";  // 可以設置預設的檔名
+                    linkElement.textContent = "Click here to download the MP3 file";
+                    document.getElementById("downloadLinkContainer").innerHTML = '';  // 清空容器
+                    document.getElementById("downloadLinkContainer").appendChild(linkElement);
+                }
             })
             .catch(error => {
                 console.error("Download error:", error);
@@ -52,5 +45,7 @@
     <input type="text" id="url" placeholder="Enter YouTube URL">
     <br><br>
     <button onclick="startDownload()">Start Download</button>
+
+    <div id="downloadLinkContainer"></div> <!-- 顯示下載連結的容器 -->
 </body>
 </html>
