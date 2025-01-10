@@ -71,8 +71,8 @@ def download_audio_to_disk(url):
         # 下載 MP3 檔案並儲存到磁碟
         mp3_response = requests.get(download_link, stream=True)
         if mp3_response.status_code != 200:
-            logging.error("Failed to download audio file.")
-            raise Exception("Failed to download audio file.")
+            logging.error(f"Failed to download audio file. Response: {mp3_response.text}")
+            raise Exception(f"Failed to download audio file. Response: {mp3_response.text}")
         
         logging.debug("Successfully started downloading MP3 file.")
 
