@@ -4,7 +4,9 @@ import requests
 from flask import Flask, request, render_template, jsonify, send_from_directory
 import shutil
 import hashlib
+from dotenv import load_dotenv
 
+load_dotenv()  # 載入 .env 文件
 app = Flask(__name__)
 progress = {"status": "", "percentage": 0, "filename": ""}  # 加入 filename
 
