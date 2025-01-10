@@ -1,12 +1,9 @@
 import os
-import subprocess
 import threading
+import requests
 from flask import Flask, request, render_template, jsonify, send_from_directory
 import shutil
 import hashlib
-
-
-
 
 app = Flask(__name__)
 progress = {"status": "", "percentage": 0, "filename": ""}  # 加入 filename
@@ -32,61 +29,56 @@ def download_audio(url, output_dir="downloads"):
     progress["status"] = "Downloading"
     progress["percentage"] = 0
 
-    # 使用 yt-dlp 來抓取影片標題
-    command_title = ["yt-dlp", "--get-title", url]
-    title_process = subprocess.Popen(command_title, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-    title, error = title_process.communicate()
+    # 從 YouTube URL 中提取視頻 ID
+    youtube_id = youtube_parser(url)
 
-    if error:
-        print("Error:", error)
-    print("Title:", title.strip())
-    
+    # 使用新的 API 進行下載
+    api_url = 'https://youtube-mp36.p.rapidapi.com/dl'
+    headers = {
+        'X-RapidAPI-Key': 'e312f35fb8msh05130293ca01e70p1b189cjsn7ca950ec68a1',
+        'X-RapidAPI-Host': 'youtube-mp36.p.rapidapi.com'
+    }
+    params = {
+        'id': youtube_id
+    }
+
     try:
-        title_process = subprocess.Popen(command_title, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-        title, _ = title_process.communicate()
-        title = title.strip()  # 去除標題的空白字元
-        if not title:
-            title = "download"  # 如果標題為空，使用預設的檔案名
-        
-        # 動態設定檔案名稱，根據影片標題命名檔案
-        output_file = os.path.join(output_dir, f"{title}.mp3")
-        # output_file = os.path.join(output_dir, generate_filename(url))
-        
-        # 使用 yt-dlp 下載音訊並轉換為 mp3
-        command = [
-            "yt-dlp",
-            "--cookies", "cookies.txt",
-            "-x", "--audio-format", "mp3",
-            "--output", output_file,
-            url
-        ]
-
-        process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-        for line in process.stdout:
-            # 解析進度百分比，例如: "[download]  23.0%"
-            if "[download]" in line and "%" in line:
-                try:
-                    percentage_str = line.split("%")[0].strip().split()[-1]  # 提取百分比部分
-                    percentage = float(percentage_str)  # 轉換為浮點數
-                    progress["percentage"] = int(percentage)  # 轉換為整數顯示
-                except ValueError:
-                    continue  # 如果無法解析，跳過該行
-        process.wait()
-
-        if process.returncode == 0:
-            progress["status"] = "Completed"
-            progress["filename"] = f"{title}.mp3"  # 設定檔案名稱
+        # 發送請求到 API
+        response = requests.get(api_url, headers=headers, params=params)
+        if response.status_code == 200:
+            # 解析 MP3 下載鏈接
+            download_link = response.json().get('link')
+            if download_link:
+                filename = generate_filename(url)
+                download_file(download_link, filename, output_dir)
+                progress["status"] = "Completed"
+                progress["filename"] = filename
+            else:
+                progress["status"] = "Failed to retrieve download link"
         else:
-            stderr_output = process.stderr.read()
-            progress["status"] = f"Failed with error: {stderr_output}"
+            progress["status"] = f"Error: {response.text}"
     except Exception as e:
         progress["status"] = f"Error: {str(e)}"
 
+def youtube_parser(url):
+    """從 YouTube URL 提取視頻 ID"""
+    # 假設 URL 格式是 YouTube 的標準格式
+    # https://www.youtube.com/watch?v=<video_id>
+    video_id = url.split("v=")[-1]
+    return video_id
+
+def download_file(url, filename, output_dir):
+    """下載文件並保存到指定路徑"""
+    response = requests.get(url, stream=True)
+    output_path = os.path.join(output_dir, filename)
+    with open(output_path, 'wb') as f:
+        for chunk in response.iter_content(chunk_size=1024):
+            if chunk:
+                f.write(chunk)
 
 @app.route('/')
 def index():
     return render_template('index.html')
-
 
 @app.route('/download', methods=['POST'])
 def download():
@@ -102,11 +94,9 @@ def download():
 
     return jsonify({"message": "Download started!"})
 
-
 @app.route('/progress', methods=['GET'])
 def get_progress():
     return jsonify(progress)
-
 
 @app.route('/files/<filename>', methods=['GET'])
 def get_file(filename):
@@ -115,7 +105,6 @@ def get_file(filename):
         return send_from_directory(output_dir, filename, as_attachment=True)
     except Exception as e:
         return jsonify({"error": "File not found"}), 404
-
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=port)
