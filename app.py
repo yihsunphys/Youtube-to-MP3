@@ -7,6 +7,7 @@ import hashlib
 
 
 
+
 app = Flask(__name__)
 progress = {"status": "", "percentage": 0, "filename": ""}  # 加入 filename
 
@@ -33,6 +34,13 @@ def download_audio(url, output_dir="downloads"):
 
     # 使用 yt-dlp 來抓取影片標題
     command_title = ["yt-dlp", "--get-title", url]
+    title_process = subprocess.Popen(command_title, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    title, error = title_process.communicate()
+
+    if error:
+        print("Error:", error)
+    print("Title:", title.strip())
+    
     try:
         title_process = subprocess.Popen(command_title, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
         title, _ = title_process.communicate()
