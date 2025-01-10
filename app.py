@@ -1,27 +1,33 @@
 import os
 import io
-import threading
+import tempfile
 import requests
 from flask import Flask, request, render_template, jsonify, send_file
 from dotenv import load_dotenv
-import hashlib
 
 load_dotenv()  # 載入 .env 文件
 app = Flask(__name__)
-progress = {"status": "", "percentage": 0, "filename": ""}  # 加入 filename
 
 # 使用 Render 提供的 PORT 環境變數
 port = int(os.environ.get("PORT", 5000))
 
-def generate_filename(url):
-    # 根據 URL 生成唯一檔名
-    hash_object = hashlib.sha1(url.encode())
-    filename = hash_object.hexdigest() + ".mp3"
-    return filename
+def get_youtube_title(youtube_id):
+    """從 YouTube Data API 獲取影片標題"""
+    api_url = f"https://www.googleapis.com/youtube/v3/videos"
+    params = {
+        'id': youtube_id,
+        'part': 'snippet',
+        'key': os.getenv('YOUTUBE_API_KEY')  # 需要在 .env 中提供 YouTube API 金鑰
+    }
+    response = requests.get(api_url, params=params)
+    if response.status_code == 200:
+        data = response.json()
+        if "items" in data and len(data["items"]) > 0:
+            return data["items"][0]["snippet"]["title"]
+    return "downloaded_audio"  # 預設標題
 
-def download_audio_to_memory(url):
-    """從 YouTube URL 下載音訊檔案，並返回記憶體流
-    """
+def download_audio_to_disk(url):
+    """從 YouTube URL 下載音訊檔案，並儲存在磁碟中"""
     youtube_id = youtube_parser(url)
 
     # 使用 RapidAPI 提供的服務
@@ -40,27 +46,27 @@ def download_audio_to_memory(url):
     if not download_link:
         raise Exception("Failed to retrieve download link from API.")
 
-    # 下載 MP3 檔案並存入記憶體
+    # 下載 MP3 檔案並儲存到磁碟
     mp3_response = requests.get(download_link, stream=True)
     if mp3_response.status_code != 200:
         raise Exception("Failed to download audio file.")
 
-    # 使用 BytesIO 儲存檔案
-    file_stream = io.BytesIO()
-    for chunk in mp3_response.iter_content(chunk_size=1024):
-        if chunk:
-            file_stream.write(chunk)
+    # 儲存 MP3 檔案至暫時檔案
+    temp_file = tempfile.NamedTemporaryFile(delete=False, suffix='.mp3')
+    with open(temp_file.name, 'wb') as f:
+        for chunk in mp3_response.iter_content(chunk_size=1024):
+            if chunk:
+                f.write(chunk)
 
-    # 重置指針位置以便讀取
-    file_stream.seek(0)
+    # 獲取影片標題作為檔名
+    title = get_youtube_title(youtube_id)
+    sanitized_title = ''.join(c for c in title if c.isalnum() or c in ' _-').strip()  # 移除非法字元
+    filename = f"{sanitized_title}.mp3"
 
-    # 生成檔名
-    filename = generate_filename(url)
-    return file_stream, filename
+    return temp_file.name, filename
 
 def youtube_parser(url):
-    """從 YouTube URL 提取視頻 ID
-    """
+    """從 YouTube URL 提取視頻 ID"""
     # 假設 URL 格式是 YouTube 的標準格式
     # https://www.youtube.com/watch?v=<video_id>
     video_id = url.split("v=")[-1]
@@ -78,20 +84,20 @@ def download():
         return jsonify({"error": "No URL provided!"}), 400
 
     try:
-        # 從 URL 下載檔案，並將其儲在記憶體中
-        file_stream, filename = download_audio_to_memory(url)
+        # 從 URL 下載檔案，並將其儲存在磁碟中
+        file_path, filename = download_audio_to_disk(url)
         return send_file(
-            file_stream,
+            file_path,
             mimetype="audio/mpeg",
             as_attachment=True,
-            download_name=filename
+            download_name=filename  # 指定檔案名稱
         )
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 @app.route('/progress', methods=['GET'])
 def get_progress():
-    return jsonify(progress)
+    return jsonify({"status": "completed", "percentage": 100})
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=port)

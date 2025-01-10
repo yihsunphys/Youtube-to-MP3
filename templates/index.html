@@ -20,11 +20,19 @@
                         throw new Error(err.error);
                     });
                 }
-                return response.blob(); // 下載二進制數據
+                // 從 Content-Disposition 標頭提取檔案名稱
+                const contentDisposition = response.headers.get('Content-Disposition');
+                let filename = "audio.mp3"; // 預設檔案名
+                if (contentDisposition) {
+                    const match = contentDisposition.match(/filename\*=UTF-8''(.+)/);
+                    if (match && match[1]) {
+                        filename = decodeURIComponent(match[1]);
+                    }
+                }
+                return response.blob().then(blob => ({ blob, filename }));
             })
-            .then(blob => {
+            .then(({ blob, filename }) => {
                 const link = document.createElement('a');
-                const filename = "audio.mp3"; // 可根據需要自動生成文件名
                 link.href = URL.createObjectURL(blob);
                 link.download = filename;
                 link.click(); // 觸發下載
