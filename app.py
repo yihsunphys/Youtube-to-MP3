@@ -35,7 +35,7 @@ def download_audio(url, output_dir="downloads"):
     # 使用新的 API 進行下載
     api_url = 'https://youtube-mp36.p.rapidapi.com/dl'
     headers = {
-        'X-RapidAPI-Key': 'e312f35fb8msh05130293ca01e70p1b189cjsn7ca950ec68a1',
+        'X-RapidAPI-Key': os.getenv('VITE_RAPID_API_KEY'),
         'X-RapidAPI-Host': 'youtube-mp36.p.rapidapi.com'
     }
     params = {
